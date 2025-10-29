@@ -1,0 +1,118 @@
+package main
+"f
+import mt"
+const NMAX = 99
+
+type device struct {
+	namaDevice string
+	seri       string
+	jumHash    float64
+	jumWatt    float64
+}
+
+type tabDev [NMAX]device
+
+func main() {
+	var data tabDev
+	var nData int
+
+	fmt.Print("Masukkan jumlah device: ")
+	fmt.Scan(&nData)
+
+	bacaData(&data, nData)
+
+	fmt.Println("\nData input:")
+	cetakData(data, nData)
+
+	data = urutMenaik(data, nData)
+	fmt.Println("\nData Menaik berdasarkan Hashrate:")
+	cetakData(data, nData)
+
+	data = urutMenurun(data, nData)
+	fmt.Println("\nData Menurun berdasarkan daya listrik:")
+	cetakData(data, nData)
+
+	palingKuat(data, nData)
+	palingHemat(data, nData)
+}
+
+
+func bacaData(data *tabDev, n int) {
+	for i := 0; i < n; i++ {
+		fmt.Scan(&data[i].namaDevice, &data[i].seri, &data[i].jumHash, &data[i].jumWatt)
+	}
+}
+
+
+func palingKuat(data tabDev, n int) {
+	sorted := urutMenaik(data, n)
+	target := sorted[0].jumHash
+	low, high := 0, n-1
+	for low <= high {
+		mid := (low + high) / 2
+		if sorted[mid].jumHash == target {
+			fmt.Println("\nDevice paling kuat (Hashrate tertinggi):")
+			fmt.Printf("%-10s %-15s %s\n", "BRAND", "Hashrate(MH/s)", "Daya(W)")
+			fmt.Printf("%-10s %-15.2f %4.0f\n", sorted[mid].namaDevice, sorted[mid].jumHash, sorted[mid].jumWatt)
+			return
+		} else if sorted[mid].jumHash < target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+}
+
+
+func palingHemat(data tabDev, n int) {
+	sorted := urutMenurun(data, n)
+	target := sorted[0].jumWatt
+	low, high := 0, n-1
+	for low <= high {
+		mid := (low + high) / 2
+		if sorted[mid].jumWatt == target {
+			fmt.Println("\nDevice paling hemat (Daya listrik terendah):")
+			fmt.Printf("%-10s %-15s %s\n", "BRAND", "Hashrate(MH/s)", "Daya(W)")
+			fmt.Printf("%-10s %-15.2f %4.0f\n", sorted[mid].namaDevice, sorted[mid].jumHash, sorted[mid].jumWatt)
+			return
+		} else if sorted[mid].jumWatt > target {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+}
+
+func cetakData(data tabDev, n int) {
+	fmt.Printf("%-10s %-15s %s\n", "BRAND", "Hashrate(MH/s)", "Daya(W)")
+	for i := 0; i < n; i++ {
+		fmt.Printf("%-10s %-15.2f %4.0f\n", data[i].namaDevice, data[i].jumHash, data[i].jumWatt)
+	}
+}
+
+
+func urutMenaik(data tabDev, n int) tabDev {
+	for i := 1; i < n; i++ {
+		temp := data[i]
+		j := i - 1
+		for j >= 0 && data[j].jumHash < temp.jumHash {
+			data[j+1] = data[j]
+			j--
+		}
+		data[j+1] = temp
+	}
+	return data
+}
+
+func urutMenurun(data tabDev, n int) tabDev {
+	for i := 1; i < n; i++ {
+		temp := data[i]
+		j := i - 1
+		for j >= 0 && data[j].jumWatt > temp.jumWatt {
+			data[j+1] = data[j]
+			j--
+		}
+		data[j+1] = temp
+	}
+	return data
+}
